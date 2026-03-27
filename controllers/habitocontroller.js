@@ -1,9 +1,12 @@
 const Habito = require("../models/Habito");
 
-// Crear hábito
+// Crear hábito - asociados al usuario autenticado
 exports.crearHabito = async (req, res) => {
   try {
-    const habito = new Habito(req.body);
+    const habito = new Habito({
+      ...req.body,
+      usuario: req.usuario.id
+    });
     await habito.save();
     res.json(habito);
   } catch (error) {
@@ -11,32 +14,40 @@ exports.crearHabito = async (req, res) => {
   }
 };
 
-// Obtener hábitos
+// Obtener hábitos - solo del usuario autenticado
 exports.obtenerHabitos = async (req, res) => {
   try {
-    const habitos = await Habito.find();
+    const habitos = await Habito.find({ usuario: req.usuario.id });
     res.json(habitos);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Actualizar hábito
+// Actualizar hábito - solo del usuario autenticado
 exports.actualizarHabito = async (req, res) => {
   try {
-    const habito = await Habito.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const habito = await Habito.findOneAndUpdate(
+      { _id: req.params.id, usuario: req.usuario.id },
+      req.body,
+      { new: true }
+    );
+    if (!habito) {
+      return res.status(404).json({ error: "Hábito no encontrado" });
+    }
     res.json(habito);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Eliminar hábito
+// Eliminar hábito - solo del usuario autenticado
 exports.eliminarHabito = async (req, res) => {
   try {
-    await Habito.findByIdAndDelete(req.params.id);
+    const habito = await Habito.findOneAndDelete({ _id: req.params.id, usuario: req.usuario.id });
+    if (!habito) {
+      return res.status(404).json({ error: "Hábito no encontrado" });
+    }
     res.json({ mensaje: "Hábito eliminado" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -46,7 +57,7 @@ exports.eliminarHabito = async (req, res) => {
 // Toggle hábito - maneja la lógica de rachas
 exports.toggleHabito = async (req, res) => {
   try {
-    const habito = await Habito.findById(req.params.id);
+    const habito = await Habito.findOne({ _id: req.params.id, usuario: req.usuario.id });
 
     if (!habito) {
       return res.status(404).json({ error: "Hábito no encontrado" });
