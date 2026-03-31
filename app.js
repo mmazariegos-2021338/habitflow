@@ -3,6 +3,10 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 require("dotenv").config();
 
+// Conectar a MongoDB (funciona tanto local como en Vercel)
+const connectDB = require("./config/db");
+connectDB();
+
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -28,12 +32,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/habitos', habitosRouter);
-
-// Solo conectar a DB si no estamos en entorno serverless de Vercel
-if (process.env.VERCEL === undefined) {
-  const connectDB = require("./config/db");
-  connectDB();
-}
 
 // Exportar para Vercel
 module.exports = app;
