@@ -18,9 +18,14 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var habitosRouter = require('./routes/habitos');
 var authRouter = require('./routes/auth');
+
 var app = express();
 
-app.use(cors());
+// Configurar CORS para permitir el frontend de Vercel
+app.use(cors({
+  origin: ['https://habitflow-front.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
 
 app.use(logger('dev'));
 app.use(express.json());
